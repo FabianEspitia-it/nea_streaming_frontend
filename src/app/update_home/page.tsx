@@ -69,7 +69,7 @@ export default function UpdateHome() {
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-center rounded-lg p-10 max-w-md w-full border border-[#00FF00]">
-          <h1 className="text-[#00FF00] font-bold text-5xl mb-6">
+          <h1 className="text-[#00FF00] font-black italic transform -rotate-2 text-5xl mb-6">
             Nea Streaming
           </h1>
           <p className="text-white text-lg mb-6">
