@@ -3,7 +3,6 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { GoogleAnalytics } from "@next/third-parties/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -28,7 +27,6 @@ export default async function RootLayout({
 
         {children}
       </body>
-      <GoogleAnalytics gaId="G-YYBXWKDRM0" />
     </html>
   );
 }
