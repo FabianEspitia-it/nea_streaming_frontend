@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState<null | string>(null);
 
@@ -17,16 +18,18 @@ export default function TemporalAccess() {
 
     const data = {
       email: email,
+      password: password,
     };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_NETFLIX}/password_reset/${data.email}`,
+        `${process.env.NEXT_PUBLIC_NETFLIX}/password_reset/`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(data),
         }
       );
 
@@ -101,6 +104,15 @@ export default function TemporalAccess() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+            />
+
+            <input
+              className="border-2 border-[#00FF00] focus:outline-none bg-black text-white placeholder-gray-400 rounded-lg px-4 py-3 w-full transition"
+              type="password"
+              placeholder="Contraseña"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
 
             <button
