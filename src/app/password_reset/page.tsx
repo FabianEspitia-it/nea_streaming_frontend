@@ -42,9 +42,12 @@ export default function TemporalAccess() {
 
         console.log(data);
       } else {
-        toast.error("Algo salio mal, por favor verifica el correo", {
-          theme: "dark",
-        });
+        toast.error(
+          "Algo salio mal, por favor verifica el correo y la contraseña",
+          {
+            theme: "dark",
+          }
+        );
 
         console.log("Error en la petición");
       }
@@ -79,7 +82,8 @@ export default function TemporalAccess() {
             Nea Streaming
           </h1>
           <p className="text-white text-lg mb-6">
-            Por favor digita el correo electrónico de la cuenta
+            Por favor digita el correo electrónico de la cuenta y la contraseña
+            gogo
           </p>
 
           {responseMessage && (
