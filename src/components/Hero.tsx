@@ -18,6 +18,10 @@ export default function Hero() {
       id: 3,
     },
     {
+      label: "Restablecimiento de contraseña (NETFLIX)",
+      href: "/password_reset",
+    },
+    {
       label: "Código de inicio de sesión (DISNEY+)",
       href: "/session_code",
       id: 5,
