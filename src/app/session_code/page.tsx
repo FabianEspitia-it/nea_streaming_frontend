@@ -90,7 +90,7 @@ export default function SessionCode() {
             <input
               className="border-2 border-[#00FF00] focus:outline-none bg-black text-white placeholder-gray-400 rounded-lg px-4 py-3 w-full transition"
               type="email"
-              placeholder="Correo electrónico"
+              placeholder="nea@streaming.com"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
