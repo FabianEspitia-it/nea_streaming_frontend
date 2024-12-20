@@ -4,12 +4,12 @@ import Footer from "./Footer";
 export default function Hero() {
   const services = [
     {
-      label: "Actualiza Hogar (NETFLIX)",
+      label: "Actualiza hogar (NETFLIX)",
       href: "/update_home",
       id: 1,
     },
     {
-      label: "Código acceso temporal (NETFLIX)",
+      label: "Código temporal (estoy de viaje) (NETFLIX)",
       href: "/temporal_access",
       id: 2,
     },
