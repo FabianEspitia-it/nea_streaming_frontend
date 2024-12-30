@@ -27,6 +27,11 @@ export default function Hero() {
       href: "/session_code",
       id: 5,
     },
+    {
+      label: "Nueva solicitud de inicio de sesión (NETFLIX)",
+      href: "/new_session",
+      id: 6,
+    },
   ];
 
   return (
