@@ -28,7 +28,7 @@ export default function Hero() {
       id: 5,
     },
     {
-      label: "Nueva solicitud de inicio de sesión (NETFLIX)",
+      label: "Solicitud de enlace de inicio de sesión (NETFLIX)",
       href: "/new_session",
       id: 6,
     },
