@@ -2,11 +2,7 @@ import { Fade } from "react-awesome-reveal";
 
 export default function Hero() {
   const services = [
-    {
-      label: "Actualiza hogar (NETFLIX)",
-      href: "/update_home",
-      id: 1,
-    },
+    { label: "Actualiza hogar (NETFLIX)", href: "/update_home", id: 1 },
     {
       label: "Código temporal (estoy de viaje) (NETFLIX)",
       href: "/temporal_access",
@@ -20,6 +16,7 @@ export default function Hero() {
     {
       label: "Restablecimiento de contraseña (NETFLIX)",
       href: "/password_reset",
+      id: 4,
     },
     {
       label: "Código de inicio de sesión (DISNEY+)",
@@ -34,11 +31,11 @@ export default function Hero() {
   ];
 
   return (
-    <section className="min-h-screen bg-black text-white pt-8 pb-20">
-      <div className="container mx-auto px-4">
+    <section className="min-h-screen text-white pt-8 pb-20 relative">
+      <div className="container mx-auto px-4 relative z-10">
         <Fade triggerOnce>
           <div className="text-center mb-12">
-            <h2 className="md:text-7xl text-5xl font-black italic transform -rotate-2 text-[#00FF00] mt-6">
+            <h2 className="md:text-7xl text-5xl font-black italic transform -rotate-2 text-[#00FF00] drop-shadow-[0_0_10px_#00FF00] mt-6">
               Nea Streaming
             </h2>
             <p className="text-lg md:text-xl text-white mt-4">
@@ -50,7 +47,7 @@ export default function Hero() {
             {services.map((service) => (
               <section
                 key={service.id}
-                className="group relative overflow-hidden bg-black border border-[#00FF00]/20 hover:border-[#00FF00] transition-all duration-300"
+                className="group relative overflow-hidden bg-gray-900/90 border-2 border-[#00FF00] rounded-lg shadow-lg shadow-[#00FF00]/30 hover:shadow-[#00FF00]/80 transition-all duration-300"
               >
                 <a
                   href={service.href}
@@ -58,9 +55,10 @@ export default function Hero() {
                   aria-label={service.label}
                 >
                   <div className="flex flex-col items-center text-center space-y-4">
-                    <h3 className="text-lg font-semibold">{service.label}</h3>
+                    <h3 className="text-lg font-semibold text-white drop-shadow-[0_0_5px_#00FF00]">
+                      {service.label}
+                    </h3>
                   </div>
-                  <div className="absolute inset-0 bg-[#00FF00] opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
                 </a>
               </section>
             ))}

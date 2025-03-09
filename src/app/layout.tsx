@@ -21,7 +21,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="bg-black">
+    <html lang="es">
       <body className={poppins.className}>
         <ToastContainer />
 
