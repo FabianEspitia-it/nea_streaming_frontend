@@ -65,7 +65,9 @@ export default function Hero() {
           </div>
         </Fade>
       </div>
-      <p className="md:fixed md:bottom-4 md:left-4 text-md text-white opacity-50 md:mt-0 md:ml-0 mt-7 ml-7">
+
+      {/**
+       <p className="md:fixed md:bottom-4 md:left-4 text-md text-white opacity-50 md:mt-0 md:ml-0 mt-7 ml-7">
         Desarrollado por{" "}
         <a
           href="https://wa.me/573218544162?text=Holaaa"
@@ -76,6 +78,8 @@ export default function Hero() {
           Fabián Espitia
         </a>
       </p>
+       
+       */}
     </section>
   );
 }
