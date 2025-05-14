@@ -1,5 +1,5 @@
 import { Fade } from "react-awesome-reveal";
-// import Footer from "./Footer";
+import Footer from "./Footer";
 
 export default function Hero() {
   const services = [
@@ -67,7 +67,7 @@ export default function Hero() {
         </Fade>
       </div>
 
-      {/** <Footer /> */}
+      <Footer />
     </section>
   );
 }
