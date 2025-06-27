@@ -29,6 +29,12 @@ export default function Hero() {
       href: "/new_session",
       id: 6,
     },
+
+    {
+      label: "Código de inicio de sesión (PRIME VIDEO)",
+      href: "/session_prime",
+      id: 7,
+    },
   ];
 
   return (
