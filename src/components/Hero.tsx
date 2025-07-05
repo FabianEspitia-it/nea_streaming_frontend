@@ -35,6 +35,11 @@ export default function Hero() {
       href: "/session_prime",
       id: 7,
     },
+    {
+      label: "Ayuda con la contraseña (PRIME VIDEO)",
+      href: "/password_help_prime",
+      id: 8,
+    },
   ];
 
   return (
