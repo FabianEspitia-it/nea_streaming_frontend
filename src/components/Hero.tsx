@@ -40,6 +40,11 @@ export default function Hero() {
       href: "/password_help_prime",
       id: 8,
     },
+    {
+      label: "inicio de sesión (CRUNCHYROLL)",
+      href: "/crunchyroll_link",
+      id: 9,
+    },
   ];
 
   return (
