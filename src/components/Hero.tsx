@@ -93,7 +93,6 @@ export default function Hero() {
         </Fade>
       </div>
 
-      {/* Botones de contacto dentro del Hero */}
       <div className="z-20 grid grid-cols-2 md:grid-cols-4 gap-4 justify-items-center mt-8 md:mt-0 md:absolute md:bottom-6 md:left-1/2 md:-translate-x-1/2 md:transform">
         {/* Telegram */}
         <div className="flex flex-col items-center">
@@ -173,7 +172,6 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* WhatsApp */}
         <div className="flex flex-col items-center">
           <a
             href="https://wa.me/573134489183"
