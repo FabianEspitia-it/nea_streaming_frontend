@@ -1,6 +1,5 @@
 import { Fade } from "react-awesome-reveal";
 import Image from "next/image";
-// import Footer from "./Footer";
 
 export default function Hero() {
   const services = [
@@ -42,14 +41,24 @@ export default function Hero() {
       id: 8,
     },
     {
-      label: "inicio de sesión (CRUNCHYROLL)",
+      label: "Inicio de sesión (CRUNCHYROLL)",
       href: "/crunchyroll_link",
       id: 9,
+    },
+    {
+      label: "Código de inicio de sesión (HBO MAX)",
+      href: "/hbo_session_code",
+      id: 10,
+    },
+    {
+      label: "Restablecimiento de contraseña (HBO MAX)",
+      href: "/hbo_restor_password",
+      id: 11,
     },
   ];
 
   return (
-    <section className="min-h-screen text-white pt-8 pb-20 relative">
+    <section className="min-h-screen text-white pt-8 pb-28 md:pb-36 relative">
       <div className="container mx-auto px-4 relative z-10">
         <Fade triggerOnce>
           <div className="text-center mb-12">
