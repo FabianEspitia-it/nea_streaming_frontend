@@ -8,7 +8,6 @@ import Image from "next/image";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
@@ -20,14 +19,13 @@ export default function SessionCode() {
 
     const data = {
       email: email,
-      password: password,
     };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HBO}/session_code/`,
+        `${process.env.NEXT_PUBLIC_HBO}/session_code/${data.email}`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
@@ -105,15 +103,6 @@ export default function SessionCode() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-              />
-
-              <input
-                className="border-2 border-[#00FF00] focus:outline-none bg-black text-white placeholder-gray-400 rounded-lg px-4 py-3 w-full transition"
-                type="password"
-                placeholder="Contraseña"
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
               />
 
               <button
