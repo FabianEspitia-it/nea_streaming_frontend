@@ -28,7 +28,6 @@ export default function TemporalAccess() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
         }
       );
 
