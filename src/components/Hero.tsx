@@ -174,7 +174,7 @@ export default function Hero() {
 
         <div className="flex flex-col items-center">
           <a
-            href="https://wa.me/573134489183"
+            href="https://wa.me/573209902636"
             target="_blank"
             rel="noreferrer noopener"
             className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#00FF00] relative"
