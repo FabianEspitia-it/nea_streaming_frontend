@@ -25,35 +25,40 @@ export default function Hero() {
       id: 5,
     },
     {
+      label: "Código de hogar (DISNEY+)",
+      href: "/disney_home_code",
+      id: 6,
+    },
+    {
       label: "Solicitud de enlace de inicio de sesión (NETFLIX)",
       href: "/new_session",
-      id: 6,
+      id: 7,
     },
 
     {
       label: "Código de inicio de sesión (PRIME VIDEO)",
       href: "/session_prime",
-      id: 7,
+      id: 8,
     },
     {
       label: "Ayuda con la contraseña (PRIME VIDEO)",
       href: "/password_help_prime",
-      id: 8,
+      id: 9,
     },
     {
       label: "Inicio de sesión (CRUNCHYROLL)",
       href: "/crunchyroll_link",
-      id: 9,
+      id: 10,
     },
     {
       label: "Código de inicio de sesión (HBO MAX)",
       href: "/hbo_session_code",
-      id: 10,
+      id: 11,
     },
     {
       label: "Restablecimiento de contraseña (HBO MAX)",
       href: "/hbo_restor_password",
-      id: 11,
+      id: 12,
     },
   ];
 
