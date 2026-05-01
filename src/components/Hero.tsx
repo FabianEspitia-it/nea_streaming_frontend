@@ -51,6 +51,11 @@ export default function Hero() {
       id: 10,
     },
     {
+      label: "Restablecer contraseña (CRUNCHYROLL)",
+      href: "/crunchyroll_password_reset",
+      id: 13,
+    },
+    {
       label: "Código de inicio de sesión (HBO MAX)",
       href: "/hbo_session_code",
       id: 11,

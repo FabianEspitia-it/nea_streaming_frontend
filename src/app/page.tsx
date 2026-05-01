@@ -7,7 +7,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="relative min-h-screen bg-black">
       <Image
         src="/images/gogo_logo.png"
         alt="Background"
@@ -17,8 +17,8 @@ export default function Home() {
         className="z-0"
       />
 
-      <div className="absolute inset-0 bg-black opacity-50"></div>
-      <main className="flex flex-col justify-center items-center flex-1 px-8 max-w-screen-xl mx-auto">
+      <div className="absolute inset-0 z-[1] bg-black opacity-50" aria-hidden />
+      <main className="relative z-10 flex flex-col justify-center items-center flex-1 px-8 max-w-screen-xl mx-auto w-full">
         <Hero />
       </main>
     </div>
