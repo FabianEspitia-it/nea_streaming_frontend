@@ -65,6 +65,11 @@ export default function Hero() {
       href: "/hbo_restor_password",
       id: 12,
     },
+    {
+      label: "Código de activacion (UNIVERSAL+)",
+      href: "/universal_activation_code",
+      id: 14,
+    },
   ];
 
   return (
