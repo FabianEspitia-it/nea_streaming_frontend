@@ -18,7 +18,7 @@ export default function UniversalActivationCode() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_UNIVERSAL}/universal/activation_code/${encodeURIComponent(email)}`,
+        `${process.env.NEXT_PUBLIC_UNIVERSAL}/activation_code/${encodeURIComponent(email)}`,
         {
           method: "GET",
           headers: {
