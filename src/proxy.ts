@@ -67,7 +67,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
   }
 
-  if (isRscRequest(request)) {
+  if (isRscRequest(request) && isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
