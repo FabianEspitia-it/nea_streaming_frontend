@@ -19,11 +19,36 @@ async function fetchAccessToken(): Promise<string | null> {
     cache: "no-store",
   });
 
-  if (!response.ok) {
+  if (response.ok) {
+    const data = (await response.json()) as { access_token?: string };
+    return data.access_token ?? null;
+  }
+
+  if (response.status !== 401) {
     return null;
   }
 
-  const data = (await response.json()) as { access_token?: string };
+  // Reintento explícito por si la página cargó antes de que el proxy/warmup renovara.
+  const refreshResponse = await fetch("/api/auth/refresh", {
+    method: "POST",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!refreshResponse.ok) {
+    return null;
+  }
+
+  const retry = await fetch("/api/auth/access-token", {
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!retry.ok) {
+    return null;
+  }
+
+  const data = (await retry.json()) as { access_token?: string };
   return data.access_token ?? null;
 }
 

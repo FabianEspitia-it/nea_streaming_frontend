@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import SessionWarmup from "@/components/SessionWarmup";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,6 +23,7 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={poppins.className}>
+        <SessionWarmup />
         <ToastContainer />
 
         {children}

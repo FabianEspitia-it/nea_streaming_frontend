@@ -37,6 +37,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Renovar en cualquier navegación/API (salvo el propio endpoint de refresh).
   if (refreshCandidates.length > 0 && !isRefreshApiPath(pathname)) {
     const tokens = await tryRefreshTokensFromCandidates(refreshCandidates);
 
@@ -51,6 +52,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Servicios de códigos, home, login y APIs auth: nunca mandar a sign-in por falta de access.
   if (isPublicPath(pathname)) {
     if (isSignInPagePath(pathname) && refreshToken) {
       const response = NextResponse.next();

@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { SIGN_IN_PATH } from "@/lib/auth/constants";
+import { isServicePagePath } from "@/lib/auth/service-page-paths";
 
 const PUBLIC_API_AUTH_PREFIXES = [
   "/api/auth/signin",
@@ -34,8 +35,13 @@ export function isPublicApiAuthPath(pathname: string): boolean {
   );
 }
 
+/** Rutas que no redirigen a sign-in aunque falte access (el proxy igual intenta refresh). */
 export function isPublicPath(pathname: string): boolean {
-  return isSignInPagePath(pathname) || isPublicApiAuthPath(pathname);
+  return (
+    isSignInPagePath(pathname) ||
+    isPublicApiAuthPath(pathname) ||
+    isServicePagePath(pathname)
+  );
 }
 
 export function isRefreshApiPath(pathname: string): boolean {
