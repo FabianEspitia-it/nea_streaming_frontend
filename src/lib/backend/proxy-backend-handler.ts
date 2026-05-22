@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import {
-  applySessionCookiesToResponse,
-} from "@/lib/auth/apply-session-cookies";
-import { resolveAccessTokenFromRequest } from "@/lib/auth/resolve-access-token";
-import { resolveCookieSecure } from "@/lib/auth/resolve-cookie-secure";
+import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
+import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
+import { normalizeAccessToken } from "@/lib/auth/parse-auth-response";
 import { getBackendUrl } from "@/lib/backend/config";
 
 const HOP_BY_HOP_HEADERS = new Set([
@@ -52,18 +50,20 @@ function buildForwardHeaders(
   return headers;
 }
 
+/** Confía en que proxy.ts ya renovó la sesión en esta petición. */
 export async function proxyToBackend(
   request: NextRequest,
   path: string
 ): Promise<NextResponse> {
-  const auth = await resolveAccessTokenFromRequest(request);
+  const raw = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const accessToken = normalizeAccessToken(raw);
 
-  if ("error" in auth) {
+  if (!accessToken || !isAccessTokenValid(accessToken)) {
     return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
   }
 
   const targetUrl = buildBackendUrl(request, path);
-  const headers = buildForwardHeaders(request, auth.accessToken);
+  const headers = buildForwardHeaders(request, accessToken);
 
   const init: RequestInit = {
     method: request.method,
@@ -84,18 +84,8 @@ export async function proxyToBackend(
     }
   });
 
-  const response = new NextResponse(backendResponse.body, {
+  return new NextResponse(backendResponse.body, {
     status: backendResponse.status,
     headers: responseHeaders,
   });
-
-  if (auth.refreshed) {
-    applySessionCookiesToResponse(
-      response,
-      auth.refreshed,
-      resolveCookieSecure(request)
-    );
-  }
-
-  return response;
 }

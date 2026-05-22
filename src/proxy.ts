@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {
-  applyRefreshedTokens,
+  applyRefreshedSession,
   clearSessionCookiesOnResponse,
   continueWithRefreshedSession,
   redirectToSignIn,
@@ -13,52 +13,53 @@ import {
 } from "@/lib/auth/constants";
 import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
 import {
+  isLoginPath,
   isPublicPath,
   isRefreshApiPath,
   isRscRequest,
-  isSignInPagePath,
 } from "@/lib/auth/public-paths";
 import { getRefreshTokenCandidatesFromRequest } from "@/lib/auth/read-request-cookies";
 import { resolveCookieSecure } from "@/lib/auth/resolve-cookie-secure";
-import { tryRefreshTokensFromCandidates } from "@/lib/auth/try-refresh-tokens";
+import { resolveRefreshedSession } from "@/lib/auth/refresh-session";
 
 export { ACCESS_MAX_AGE_SECONDS, REFRESH_MAX_AGE_SECONDS };
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const refreshCandidates = getRefreshTokenCandidatesFromRequest(request);
   const refreshToken = refreshCandidates[0];
+  const valid = isAccessTokenValid(token);
 
-  if (isAccessTokenValid(accessToken)) {
-    if (isSignInPagePath(pathname)) {
+  if (valid) {
+    if (isLoginPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+
     return NextResponse.next();
   }
 
-  // Renovar en cualquier navegación/API (salvo el propio endpoint de refresh).
   if (refreshCandidates.length > 0 && !isRefreshApiPath(pathname)) {
-    const tokens = await tryRefreshTokensFromCandidates(refreshCandidates);
+    const session = await resolveRefreshedSession(refreshCandidates);
 
-    if (tokens) {
-      if (isSignInPagePath(pathname)) {
+    if (session) {
+      if (isLoginPath(pathname)) {
         const response = NextResponse.redirect(new URL("/", request.url));
-        applyRefreshedTokens(request, response, tokens);
+        applyRefreshedSession(request, response, session);
         return response;
       }
 
-      return continueWithRefreshedSession(request, tokens);
+      return continueWithRefreshedSession(request, session);
     }
   }
 
-  // Servicios de códigos, home, login y APIs auth: nunca mandar a sign-in por falta de access.
   if (isPublicPath(pathname)) {
-    if (isSignInPagePath(pathname) && refreshToken) {
+    if (isLoginPath(pathname) && refreshToken) {
       const response = NextResponse.next();
       clearSessionCookiesOnResponse(response, resolveCookieSecure(request));
       return response;
     }
+
     return NextResponse.next();
   }
 

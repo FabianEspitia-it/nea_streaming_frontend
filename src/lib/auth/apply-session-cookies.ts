@@ -93,7 +93,6 @@ export function redirectToSignIn(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
 }
 
-/** @deprecated Usa applyRefreshedTokens */
 export const applyRefreshedSession = applyRefreshedTokens;
 
 /** @deprecated Usa redirectToSignIn */

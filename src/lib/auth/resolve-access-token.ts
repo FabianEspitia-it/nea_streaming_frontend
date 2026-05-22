@@ -1,18 +1,21 @@
 import type { NextRequest } from "next/server";
 import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
 import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
-import { getRefreshTokenCandidatesFromRequest } from "@/lib/auth/read-request-cookies";
-import { tryRefreshTokensFromCandidates } from "@/lib/auth/try-refresh-tokens";
+import { normalizeAccessToken } from "@/lib/auth/parse-auth-response";
 import type { SessionTokens } from "@/lib/auth/apply-session-cookies";
+import { getRefreshTokenCandidatesFromRequest } from "@/lib/auth/read-request-cookies";
+import { resolveRefreshedSession } from "@/lib/auth/refresh-session";
 
 export type ResolvedAccessToken =
   | { accessToken: string; refreshed?: SessionTokens }
   | { error: "unauthenticated" };
 
+/** Renueva si hace falta (p. ej. route handlers fuera del proxy). */
 export async function resolveAccessTokenFromRequest(
   request: NextRequest
 ): Promise<ResolvedAccessToken> {
-  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const raw = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const accessToken = normalizeAccessToken(raw);
 
   if (isAccessTokenValid(accessToken)) {
     return { accessToken: accessToken! };
@@ -24,14 +27,14 @@ export async function resolveAccessTokenFromRequest(
     return { error: "unauthenticated" };
   }
 
-  const tokens = await tryRefreshTokensFromCandidates(refreshCandidates);
+  const session = await resolveRefreshedSession(refreshCandidates);
 
-  if (!tokens) {
+  if (!session) {
     return { error: "unauthenticated" };
   }
 
   return {
-    accessToken: tokens.accessToken,
-    refreshed: tokens,
+    accessToken: session.accessToken,
+    refreshed: session,
   };
 }

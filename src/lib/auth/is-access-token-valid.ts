@@ -1,3 +1,5 @@
+import { normalizeAccessToken } from "@/lib/auth/parse-auth-response";
+
 export function decodeJwtPayload(
   token: string
 ): Record<string, unknown> | null {
@@ -21,7 +23,13 @@ export function isAccessTokenValid(token: string | undefined): boolean {
     return false;
   }
 
-  const payload = decodeJwtPayload(token);
+  const normalized = normalizeAccessToken(token);
+
+  if (!normalized) {
+    return false;
+  }
+
+  const payload = decodeJwtPayload(normalized);
 
   if (!payload || typeof payload.exp !== "number") {
     return false;

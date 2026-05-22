@@ -67,7 +67,9 @@ export async function refreshWithBackend(
     method: "POST",
     headers: {
       Cookie: `${REFRESH_TOKEN_COOKIE}=${refreshToken}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ refresh_token: refreshToken }),
   });
 
   if (!response.ok) {
