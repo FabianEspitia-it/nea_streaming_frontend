@@ -2,9 +2,10 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
-import { RotateSpinner } from "react-spinners-kit";
+import { RingLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import { fetchBackendService } from "@/lib/backend/service-fetch";
 
 export default function UniversalActivationCode() {
   const [email, setEmail] = useState("");
@@ -17,14 +18,10 @@ export default function UniversalActivationCode() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_UNIVERSAL}/activation_code/${encodeURIComponent(email)}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await fetchBackendService(
+        "universal",
+        `/activation_code/${encodeURIComponent(email)}`,
+        { method: "GET" },
       );
 
       if (response.ok) {
@@ -58,7 +55,7 @@ export default function UniversalActivationCode() {
       <div className="flex justify-center items-center bg-black h-screen w-full">
         <div className="text-center">
           <div className="flex justify-center">
-            <RotateSpinner color="#00FF00" size={55} />
+            <RingLoader color="#00FF00" loading size={55} />
           </div>
           <p className="pt-4 font-semibold text-white">
             Gogo está trayendo el código de activación, por favor espera unos

@@ -77,6 +77,18 @@ export default function Hero() {
       <div className="container mx-auto px-4 relative z-10">
         <Fade triggerOnce>
           <div className="text-center mb-12">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={async () => {
+                  await fetch("/api/auth/logout", { method: "POST" });
+                  window.location.href = "/sign-in";
+                }}
+                className="text-sm border border-[#00FF00] text-[#00FF00] rounded-lg px-4 py-2 hover:bg-[#00FF00] hover:text-black transition"
+              >
+                Cerrar sesión
+              </button>
+            </div>
             <h2 className="md:text-7xl text-5xl font-black italic transform -rotate-2 text-[#00FF00] drop-shadow-[0_0_10px_#00FF00] mt-6">
               Nea Streaming
             </h2>

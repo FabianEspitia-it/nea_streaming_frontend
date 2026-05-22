@@ -2,9 +2,10 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
-import { RotateSpinner } from "react-spinners-kit";
+import { RingLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import { fetchBackendService } from "@/lib/backend/service-fetch";
 
 export default function UpdateHome() {
   const [email, setEmail] = useState("");
@@ -21,14 +22,10 @@ export default function UpdateHome() {
     };
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_NETFLIX}/home_code/${data.email}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await fetchBackendService(
+        "netflix",
+        `/home_code/${data.email}`,
+        { method: "GET" }
       );
 
       if (response.ok) {
@@ -54,7 +51,7 @@ export default function UpdateHome() {
       <div className="flex justify-center items-center bg-black h-screen w-full">
         <div className="text-center">
           <div className="flex justify-center">
-            <RotateSpinner color="#00FF00" size={55} />
+            <RingLoader color="#00FF00" loading size={55} />
           </div>
           <p className="pt-4 font-semibold text-white">
             Gogo está trayendo el link para actualizar hogar, por favor espera

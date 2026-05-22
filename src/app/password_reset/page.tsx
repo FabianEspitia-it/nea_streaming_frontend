@@ -2,13 +2,13 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
-import { RotateSpinner } from "react-spinners-kit";
+import { RingLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import { fetchBackendService } from "@/lib/backend/service-fetch";
 
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState<null | string>(null);
 
@@ -19,20 +19,13 @@ export default function TemporalAccess() {
 
     const data = {
       email: email,
-      password: password,
     };
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_NETFLIX}/password_reset/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetchBackendService("netflix", "/password_reset/", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -43,12 +36,9 @@ export default function TemporalAccess() {
 
         console.log(data);
       } else {
-        toast.error(
-          "Algo salio mal, por favor verifica el correo y la contraseña",
-          {
-            theme: "dark",
-          }
-        );
+        toast.error("Algo salio mal, por favor verifica el correo", {
+          theme: "dark",
+        });
 
         console.log("Error en la petición");
       }
@@ -64,7 +54,7 @@ export default function TemporalAccess() {
       <div className="flex justify-center items-center bg-black h-screen w-full">
         <div className="text-center">
           <div className="flex justify-center">
-            <RotateSpinner color="#00FF00" size={55} />
+            <RingLoader color="#00FF00" loading size={55} />
           </div>
           <p className="pt-4 font-semibold text-white">
             Gogo está trayendo el link para reestablecer la contraseña, por
@@ -93,8 +83,7 @@ export default function TemporalAccess() {
               Nea Streaming
             </h1>
             <p className="text-white text-lg mb-6">
-              Por favor digita el correo electrónico de la cuenta y la
-              contraseña gogo
+              Por favor digita el correo electrónico de la cuenta
             </p>
 
             {responseMessage && (
@@ -119,15 +108,6 @@ export default function TemporalAccess() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-              />
-
-              <input
-                className="border-2 border-[#00FF00] focus:outline-none bg-black text-white placeholder-gray-400 rounded-lg px-4 py-3 w-full transition"
-                type="password"
-                placeholder="Contraseña"
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
               />
 
               <button

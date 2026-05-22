@@ -2,13 +2,13 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
-import { RotateSpinner } from "react-spinners-kit";
+import { RingLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import { fetchBackendService } from "@/lib/backend/service-fetch";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
@@ -20,20 +20,13 @@ export default function SessionCode() {
 
     const data = {
       email: email,
-      password: password,
     };
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_DISNEY}/home_code/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        },
-      );
+      const response = await fetchBackendService("disney", "/home_code/", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -42,12 +35,9 @@ export default function SessionCode() {
           theme: "dark",
         });
       } else {
-        toast.error(
-          "Algo salió mal, por favor verifica el correo y la contraseña",
-          {
-            theme: "dark",
-          },
-        );
+        toast.error("Algo salió mal, por favor verifica el correo", {
+          theme: "dark",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -61,7 +51,7 @@ export default function SessionCode() {
       <div className="flex justify-center items-center bg-black h-screen w-full">
         <div className="text-center">
           <div className="flex justify-center">
-            <RotateSpinner color="#00FF00" size={55} />
+            <RingLoader color="#00FF00" loading size={55} />
           </div>
           <p className="pt-4 font-semibold text-white">
             Gogo está trayendo el código, por favor espera unos segundos
@@ -89,8 +79,7 @@ export default function SessionCode() {
               Nea Streaming
             </h1>
             <p className="text-white text-lg mb-6">
-              Por favor digita el correo electrónico de la cuenta y la
-              contraseña gogo
+              Por favor digita el correo electrónico de la cuenta
             </p>
 
             {responseMessage && (
@@ -105,15 +94,6 @@ export default function SessionCode() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-              />
-
-              <input
-                className="border-2 border-[#00FF00] focus:outline-none bg-black text-white placeholder-gray-400 rounded-lg px-4 py-3 w-full transition"
-                type="password"
-                placeholder="Contraseña"
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
               />
 
               <button

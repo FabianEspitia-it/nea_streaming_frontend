@@ -2,9 +2,10 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
-import { RotateSpinner } from "react-spinners-kit";
+import { RingLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import { fetchBackendService } from "@/lib/backend/service-fetch";
 
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
@@ -21,14 +22,10 @@ export default function TemporalAccess() {
     };
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HBO}/password_restore/${data.email}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await fetchBackendService(
+        "hbo",
+        `/password_restore/${data.email}`,
+        { method: "GET" }
       );
 
       if (response.ok) {
@@ -40,12 +37,9 @@ export default function TemporalAccess() {
 
         console.log(data);
       } else {
-        toast.error(
-          "Algo salio mal, por favor verifica el correo y la contraseña",
-          {
-            theme: "dark",
-          }
-        );
+        toast.error("Algo salio mal, por favor verifica el correo", {
+          theme: "dark",
+        });
 
         console.log("Error en la petición");
       }
@@ -61,7 +55,7 @@ export default function TemporalAccess() {
       <div className="flex justify-center items-center bg-black h-screen w-full">
         <div className="text-center">
           <div className="flex justify-center">
-            <RotateSpinner color="#00FF00" size={55} />
+            <RingLoader color="#00FF00" loading size={55} />
           </div>
           <p className="pt-4 font-semibold text-white">
             Gogo está trayendo el link para reestablecer la contraseña, por
@@ -90,8 +84,7 @@ export default function TemporalAccess() {
               Nea Streaming
             </h1>
             <p className="text-white text-lg mb-6">
-              Por favor digita el correo electrónico de la cuenta y la
-              contraseña gogo
+              Por favor digita el correo electrónico de la cuenta
             </p>
 
             {responseMessage && (
