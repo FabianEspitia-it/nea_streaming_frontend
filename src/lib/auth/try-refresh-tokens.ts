@@ -27,7 +27,9 @@ export async function tryRefreshTokens(
     return null;
   }
 
-  const session = await parseAuthSessionFromResponse(response);
+  const session = await parseAuthSessionFromResponse(response, {
+    fallbackRefreshToken: refreshToken,
+  });
 
   if (!session) {
     return null;

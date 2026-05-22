@@ -138,18 +138,36 @@ export function parseAuthTokensFromSetCookies(
   return { accessToken, refreshToken };
 }
 
+/** Quita prefijo Bearer que algunos backends devuelven en access_token. */
+export function normalizeAccessToken(
+  token: string | undefined
+): string | undefined {
+  if (!token) {
+    return undefined;
+  }
+
+  return token.replace(/^Bearer\s+/i, "").trim();
+}
+
 function mergePartialTokens(
   fromBody: PartialAuthTokens | null,
   fromCookies: PartialAuthTokens
 ): PartialAuthTokens {
+  // Set-Cookie tiene prioridad: en refresh el backend suele rotar el refresh ahí.
   return {
-    accessToken: fromBody?.accessToken ?? fromCookies.accessToken,
-    refreshToken: fromBody?.refreshToken ?? fromCookies.refreshToken,
+    accessToken: fromCookies.accessToken ?? fromBody?.accessToken,
+    refreshToken: fromCookies.refreshToken ?? fromBody?.refreshToken,
   };
 }
 
+export type ParseAuthSessionOptions = {
+  /** Si el backend no devuelve refresh nuevo, conservar el de la petición. */
+  fallbackRefreshToken?: string;
+};
+
 export async function parseAuthSessionFromResponse(
-  response: Response
+  response: Response,
+  options?: ParseAuthSessionOptions
 ): Promise<AuthTokens | null> {
   const fromCookies = extractTokensFromSetCookies(
     getSetCookiesFromResponse(response)
@@ -165,13 +183,16 @@ export async function parseAuthSessionFromResponse(
   }
 
   const merged = mergePartialTokens(fromBody, fromCookies);
+  const accessToken = normalizeAccessToken(merged.accessToken);
+  const refreshToken =
+    merged.refreshToken?.trim() || options?.fallbackRefreshToken?.trim();
 
-  if (!merged.accessToken || !merged.refreshToken) {
+  if (!accessToken || !refreshToken) {
     return null;
   }
 
   return {
-    accessToken: merged.accessToken,
-    refreshToken: merged.refreshToken,
+    accessToken,
+    refreshToken,
   };
 }

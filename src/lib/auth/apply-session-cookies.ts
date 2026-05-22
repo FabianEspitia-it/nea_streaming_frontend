@@ -65,6 +65,8 @@ export function applyRefreshedTokens(
   response: NextResponse,
   tokens: SessionTokens
 ): void {
+  request.cookies.set(ACCESS_TOKEN_COOKIE, tokens.accessToken);
+  request.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken);
   applySessionCookiesToResponse(response, tokens);
   applySessionCookiesToRequest(request, tokens);
 }
@@ -73,6 +75,8 @@ export function continueWithRefreshedSession(
   request: NextRequest,
   tokens: SessionTokens
 ): NextResponse {
+  request.cookies.set(ACCESS_TOKEN_COOKIE, tokens.accessToken);
+  request.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken);
   const requestHeaders = applySessionCookiesToRequest(request, tokens);
   const response = NextResponse.next({
     request: { headers: requestHeaders },

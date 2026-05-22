@@ -74,7 +74,9 @@ export async function refreshWithBackend(
     return null;
   }
 
-  return parseAuthSessionFromResponse(response);
+  return parseAuthSessionFromResponse(response, {
+    fallbackRefreshToken: refreshToken,
+  });
 }
 
 export async function logoutWithBackend(refreshToken: string): Promise<boolean> {
