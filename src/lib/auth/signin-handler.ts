@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { accessTokenCookie, refreshTokenCookie } from "@/lib/auth/cookie-options";
+import { resolveCookieSecure } from "@/lib/auth/resolve-cookie-secure";
 import { parseLoginTokens } from "@/app/api/auth/login/parse-login-response";
 import { fetchBackendApi } from "@/server/fetch-backend-api";
 
@@ -95,8 +96,9 @@ export async function handleSignIn(req: NextRequest): Promise<NextResponse> {
   }
 
   const res = NextResponse.json({ ok: true });
-  const access = accessTokenCookie(tokens.accessToken);
-  const refresh = refreshTokenCookie(tokens.refreshToken);
+  const secure = resolveCookieSecure(req);
+  const access = accessTokenCookie(tokens.accessToken, secure);
+  const refresh = refreshTokenCookie(tokens.refreshToken, secure);
   res.cookies.set(access.name, access.value, access.opts);
   res.cookies.set(refresh.name, refresh.value, refresh.opts);
   return res;

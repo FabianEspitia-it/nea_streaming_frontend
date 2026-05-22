@@ -19,6 +19,7 @@ import {
   isSignInPagePath,
 } from "@/lib/auth/public-paths";
 import { getRefreshTokenCandidatesFromRequest } from "@/lib/auth/read-request-cookies";
+import { resolveCookieSecure } from "@/lib/auth/resolve-cookie-secure";
 import { tryRefreshTokensFromCandidates } from "@/lib/auth/try-refresh-tokens";
 
 export { ACCESS_MAX_AGE_SECONDS, REFRESH_MAX_AGE_SECONDS };
@@ -53,7 +54,7 @@ export async function proxy(request: NextRequest) {
   if (isPublicPath(pathname)) {
     if (isSignInPagePath(pathname) && refreshToken) {
       const response = NextResponse.next();
-      clearSessionCookiesOnResponse(response);
+      clearSessionCookiesOnResponse(response, resolveCookieSecure(request));
       return response;
     }
     return NextResponse.next();

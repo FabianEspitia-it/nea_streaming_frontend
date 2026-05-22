@@ -82,6 +82,12 @@ function parseCookieValue(setCookie: string): { name: string; value: string } | 
   };
 }
 
+/** Separa varias cookies cuando vienen en un solo header Set-Cookie. */
+function splitCombinedSetCookieHeader(header: string): string[] {
+  const parts = header.split(/,(?=\s*[\w-]+=)/);
+  return parts.map((p) => p.trim()).filter(Boolean);
+}
+
 export function getSetCookiesFromResponse(response: Response): string[] {
   if (typeof response.headers.getSetCookie === "function") {
     const cookies = response.headers.getSetCookie();
@@ -101,7 +107,18 @@ export function getSetCookiesFromResponse(response: Response): string[] {
 
   const singleCookie = response.headers.get("set-cookie");
 
-  return singleCookie ? [singleCookie] : [];
+  if (!singleCookie) {
+    return [];
+  }
+
+  if (
+    singleCookie.includes(`${ACCESS_TOKEN_COOKIE}=`) &&
+    singleCookie.includes(`${REFRESH_TOKEN_COOKIE}=`)
+  ) {
+    return splitCombinedSetCookieHeader(singleCookie);
+  }
+
+  return [singleCookie];
 }
 
 /** Extrae tokens aunque vengan repartidos (p. ej. access en JSON y refresh en Set-Cookie). */

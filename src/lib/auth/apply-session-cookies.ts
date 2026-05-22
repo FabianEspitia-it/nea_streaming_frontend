@@ -10,6 +10,7 @@ import {
   clearedCookie,
   refreshTokenCookie,
 } from "@/lib/auth/cookie-options";
+import { resolveCookieSecure } from "@/lib/auth/resolve-cookie-secure";
 
 export type SessionTokens = {
   accessToken: string;
@@ -18,10 +19,11 @@ export type SessionTokens = {
 
 export function applySessionCookiesToResponse(
   response: NextResponse,
-  tokens: SessionTokens
+  tokens: SessionTokens,
+  secure?: boolean
 ): void {
-  const access = accessTokenCookie(tokens.accessToken);
-  const refresh = refreshTokenCookie(tokens.refreshToken);
+  const access = accessTokenCookie(tokens.accessToken, secure);
+  const refresh = refreshTokenCookie(tokens.refreshToken, secure);
 
   response.cookies.set(access.name, access.value, access.opts);
   response.cookies.set(refresh.name, refresh.value, refresh.opts);
@@ -51,9 +53,12 @@ export function applySessionCookiesToRequest(
   return requestHeaders;
 }
 
-export function clearSessionCookiesOnResponse(response: NextResponse): void {
-  const access = clearedCookie(ACCESS_TOKEN_COOKIE);
-  const refresh = clearedCookie(REFRESH_TOKEN_COOKIE);
+export function clearSessionCookiesOnResponse(
+  response: NextResponse,
+  secure?: boolean
+): void {
+  const access = clearedCookie(ACCESS_TOKEN_COOKIE, secure);
+  const refresh = clearedCookie(REFRESH_TOKEN_COOKIE, secure);
 
   response.cookies.set(access.name, access.value, access.opts);
   response.cookies.set(refresh.name, refresh.value, refresh.opts);
@@ -65,23 +70,22 @@ export function applyRefreshedTokens(
   response: NextResponse,
   tokens: SessionTokens
 ): void {
+  const secure = resolveCookieSecure(request);
   request.cookies.set(ACCESS_TOKEN_COOKIE, tokens.accessToken);
   request.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken);
-  applySessionCookiesToResponse(response, tokens);
-  applySessionCookiesToRequest(request, tokens);
+  applySessionCookiesToResponse(response, tokens, secure);
 }
 
 export function continueWithRefreshedSession(
   request: NextRequest,
   tokens: SessionTokens
 ): NextResponse {
+  const secure = resolveCookieSecure(request);
   request.cookies.set(ACCESS_TOKEN_COOKIE, tokens.accessToken);
   request.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken);
-  const requestHeaders = applySessionCookiesToRequest(request, tokens);
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-  applySessionCookiesToResponse(response, tokens);
+
+  const response = NextResponse.next({ request });
+  applySessionCookiesToResponse(response, tokens, secure);
   return response;
 }
 

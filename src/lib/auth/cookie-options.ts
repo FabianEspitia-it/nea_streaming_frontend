@@ -5,10 +5,7 @@ import {
   REFRESH_MAX_AGE_SECONDS,
   REFRESH_TOKEN_COOKIE,
 } from "@/lib/auth/constants";
-
-export function isProd(): boolean {
-  return process.env.NODE_ENV === "production";
-}
+import { resolveCookieSecure } from "@/lib/auth/resolve-cookie-secure";
 
 type CookieSpec = {
   name: string;
@@ -17,37 +14,47 @@ type CookieSpec = {
 };
 
 export function getSessionCookieOptions(
-  maxAge?: number
+  maxAge?: number,
+  secure?: boolean
 ): Partial<ResponseCookie> {
+  const domain = process.env.COOKIE_DOMAIN?.trim();
+
   return {
     httpOnly: true,
-    secure: isProd(),
+    secure: secure ?? resolveCookieSecure(),
     sameSite: "lax",
     path: "/",
+    ...(domain ? { domain } : {}),
     ...(maxAge !== undefined ? { maxAge } : {}),
   };
 }
 
-export function accessTokenCookie(token: string): CookieSpec {
+export function accessTokenCookie(
+  token: string,
+  secure?: boolean
+): CookieSpec {
   return {
     name: ACCESS_TOKEN_COOKIE,
     value: token,
-    opts: getSessionCookieOptions(ACCESS_MAX_AGE_SECONDS),
+    opts: getSessionCookieOptions(ACCESS_MAX_AGE_SECONDS, secure),
   };
 }
 
-export function refreshTokenCookie(token: string): CookieSpec {
+export function refreshTokenCookie(
+  token: string,
+  secure?: boolean
+): CookieSpec {
   return {
     name: REFRESH_TOKEN_COOKIE,
     value: token,
-    opts: getSessionCookieOptions(REFRESH_MAX_AGE_SECONDS),
+    opts: getSessionCookieOptions(REFRESH_MAX_AGE_SECONDS, secure),
   };
 }
 
-export function clearedCookie(name: string): CookieSpec {
+export function clearedCookie(name: string, secure?: boolean): CookieSpec {
   return {
     name,
     value: "",
-    opts: { ...getSessionCookieOptions(0), maxAge: 0 },
+    opts: { ...getSessionCookieOptions(0, secure), maxAge: 0 },
   };
 }
