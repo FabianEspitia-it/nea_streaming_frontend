@@ -34,7 +34,7 @@ export function isPublicApiAuthPath(pathname: string): boolean {
   );
 }
 
-/** Solo login y APIs de auth; el resto exige sesión (access válido o refresh renovado). */
+/** Solo login y APIs de auth; el resto exige sesión. */
 export function isPublicPath(pathname: string): boolean {
   return isSignInPagePath(pathname) || isPublicApiAuthPath(pathname);
 }

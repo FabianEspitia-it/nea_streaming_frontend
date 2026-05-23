@@ -1,10 +1,12 @@
+import { getClientAccessToken } from "@/lib/auth/get-client-access-token";
+import { getClientBackendUrl } from "@/lib/backend/config";
 import {
   backendServicePath,
   type StreamingService,
 } from "@/lib/backend/service-paths";
 
-function buildBffUrl(service: StreamingService, path: string): string {
-  return `/api/backend${backendServicePath(service, path)}`;
+function buildBackendUrl(service: StreamingService, path: string): string {
+  return `${getClientBackendUrl()}${backendServicePath(service, path)}`;
 }
 
 function buildRequestHeaders(init?: RequestInit): Headers {
@@ -17,6 +19,19 @@ function buildRequestHeaders(init?: RequestInit): Headers {
   return headers;
 }
 
+function buildAuthHeaders(accessToken: string, init?: RequestInit): Headers {
+  const headers = buildRequestHeaders(init);
+  headers.set("Authorization", `Bearer ${accessToken}`);
+  return headers;
+}
+
+function unauthenticatedResponse(): Response {
+  return new Response(JSON.stringify({ detail: "No autenticado" }), {
+    status: 401,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 async function refreshSession(): Promise<boolean> {
   const response = await fetch("/api/auth/refresh", {
     method: "POST",
@@ -27,27 +42,38 @@ async function refreshSession(): Promise<boolean> {
   return response.ok;
 }
 
-/**
- * Llama al backend vía BFF. El access_token solo viaja en cookie HttpOnly;
- * el cliente nunca recibe el JWT en el body.
- */
+/** Llama al backend unificado directamente (BACKEND_API_URL) con JWT. */
 export async function fetchBackendService(
   service: StreamingService,
   path: string,
   init?: RequestInit
 ): Promise<Response> {
-  const url = buildBffUrl(service, path);
-  const requestInit: RequestInit = {
-    ...init,
-    headers: buildRequestHeaders(init),
-    credentials: "include",
-    cache: "no-store",
-  };
+  const url = buildBackendUrl(service, path);
 
-  let response = await fetch(url, requestInit);
+  let accessToken = await getClientAccessToken();
+
+  if (!accessToken) {
+    return unauthenticatedResponse();
+  }
+
+  let response = await fetch(url, {
+    ...init,
+    headers: buildAuthHeaders(accessToken, init),
+    cache: "no-store",
+  });
 
   if (response.status === 401 && (await refreshSession())) {
-    response = await fetch(url, requestInit);
+    accessToken = await getClientAccessToken();
+
+    if (!accessToken) {
+      return unauthenticatedResponse();
+    }
+
+    response = await fetch(url, {
+      ...init,
+      headers: buildAuthHeaders(accessToken, init),
+      cache: "no-store",
+    });
   }
 
   return response;

@@ -1,4 +1,4 @@
-/** Páginas de códigos/enlaces: no exigen login, pero sí deben renovar access si hay refresh. */
+/** Páginas de códigos/enlaces (requieren sesión iniciada). */
 export const SERVICE_PAGE_PATHS = [
   "/",
   "/update_home",
