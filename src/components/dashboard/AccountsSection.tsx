@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { bffFetch, readBffError } from "@/lib/dashboard/bff";
+import { fetchAllAccounts } from "@/lib/dashboard/fetch-all-accounts";
 import DashboardModal from "@/components/dashboard/DashboardModal";
 import SearchableSelect from "@/components/dashboard/SearchableSelect";
 import type {
@@ -86,9 +87,9 @@ export default function AccountsSection() {
   const loadLinkPickerData = useCallback(async () => {
     setLoadingLinkPickers(true);
     try {
-      const [usersRes, accountsRes] = await Promise.all([
+      const [usersRes, allAccounts] = await Promise.all([
         bffFetch("/users"),
-        bffFetch("/accounts?limit=500&sort_by=email&order=asc"),
+        fetchAllAccounts(),
       ]);
 
       if (usersRes.ok) {
@@ -96,15 +97,17 @@ export default function AccountsSection() {
         setUsers(data.users ?? []);
       }
 
-      if (accountsRes.ok) {
-        const data = (await accountsRes.json()) as AccountsListResponse;
-        setLinkPickerAccounts(data.accounts ?? []);
-      }
+      setLinkPickerAccounts(allAccounts);
     } catch {
       toast.error("No se pudieron cargar usuarios y cuentas", { theme: "dark" });
     } finally {
       setLoadingLinkPickers(false);
     }
+  }, []);
+
+  const searchAccounts = useCallback(async (query: string) => {
+    const rows = await fetchAllAccounts({ email: query });
+    return rows.map((account) => ({ id: account.id, label: account.email }));
   }, []);
 
   function openLinkModal() {
@@ -318,7 +321,8 @@ export default function AccountsSection() {
                 onChange={setLinkAccountId}
                 placeholder="Buscar cuenta…"
                 loading={loadingLinkPickers}
-                emptyMessage="No hay cuentas"
+                emptyMessage="No hay cuentas con ese correo"
+                onSearch={searchAccounts}
               />
             </div>
           </div>

@@ -16,6 +16,9 @@ type SearchableSelectProps = {
   disabled?: boolean;
   loading?: boolean;
   emptyMessage?: string;
+  /** Búsqueda en servidor (p. ej. cuentas fuera del lote inicial). */
+  onSearch?: (query: string) => Promise<SearchableOption[]>;
+  minSearchLength?: number;
 };
 
 export default function SearchableSelect({
@@ -26,27 +29,57 @@ export default function SearchableSelect({
   disabled = false,
   loading = false,
   emptyMessage = "Sin resultados",
+  onSearch,
+  minSearchLength = 1,
 }: SearchableSelectProps) {
   const listId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [remoteOptions, setRemoteOptions] = useState<SearchableOption[]>([]);
+  const [searching, setSearching] = useState(false);
 
-  const selected = useMemo(
-    () => options.find((option) => option.id === value),
-    [options, value]
-  );
+  const selected = useMemo(() => {
+    return (
+      options.find((option) => option.id === value) ??
+      remoteOptions.find((option) => option.id === value)
+    );
+  }, [options, remoteOptions, value]);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return options;
-    return options.filter((option) =>
+
+    if (!term) {
+      return options;
+    }
+
+    const localMatches = options.filter((option) =>
       option.label.toLowerCase().includes(term)
     );
-  }, [options, query]);
+
+    if (onSearch && term.length >= minSearchLength) {
+      const merged = new Map<string, SearchableOption>();
+
+      for (const option of localMatches) {
+        merged.set(option.id, option);
+      }
+
+      for (const option of remoteOptions) {
+        merged.set(option.id, option);
+      }
+
+      return Array.from(merged.values()).sort((a, b) =>
+        a.label.localeCompare(b.label)
+      );
+    }
+
+    return localMatches;
+  }, [options, query, remoteOptions, onSearch, minSearchLength]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     function handlePointerDown(event: MouseEvent) {
       if (
@@ -66,8 +99,41 @@ export default function SearchableSelect({
     setQuery(selected?.label ?? "");
   }, [selected?.label, value]);
 
+  useEffect(() => {
+    if (!onSearch || !open) {
+      return;
+    }
+
+    const term = query.trim();
+
+    if (term.length < minSearchLength) {
+      setRemoteOptions([]);
+      setSearching(false);
+      return;
+    }
+
+    setSearching(true);
+    const timer = window.setTimeout(() => {
+      void onSearch(term)
+        .then((results) => {
+          setRemoteOptions(results);
+        })
+        .catch(() => {
+          setRemoteOptions([]);
+        })
+        .finally(() => {
+          setSearching(false);
+        });
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [query, onSearch, open, minSearchLength]);
+
   function handleFocus() {
-    if (disabled || loading) return;
+    if (disabled || loading) {
+      return;
+    }
+
     setOpen(true);
     setQuery("");
   }
@@ -79,6 +145,7 @@ export default function SearchableSelect({
   }
 
   const inputValue = open ? query : selected?.label ?? query;
+  const listLoading = loading || searching;
 
   return (
     <div ref={containerRef} className="relative min-w-0">
@@ -94,6 +161,7 @@ export default function SearchableSelect({
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
+
           if (!e.target.value.trim()) {
             onChange("");
           }
@@ -108,7 +176,9 @@ export default function SearchableSelect({
           role="listbox"
           className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-[#00FF00]/40 bg-black shadow-lg"
         >
-          {filtered.length === 0 ? (
+          {listLoading ? (
+            <li className="px-3 py-2.5 text-sm text-gray-500">Buscando…</li>
+          ) : filtered.length === 0 ? (
             <li className="px-3 py-2.5 text-sm text-gray-500">{emptyMessage}</li>
           ) : (
             filtered.map((option) => (
