@@ -6,6 +6,7 @@ import { RingLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import { fetchBackendService } from "@/lib/backend/service-fetch";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");
@@ -75,9 +76,9 @@ export default function SessionCode() {
       <Fade triggerOnce cascade>
         <section className="flex items-center justify-center min-h-screen relative z-10">
           <div className="text-center rounded-lg p-10 max-w-md w-full border border-[#00FF00] bg-black">
-            <h1 className="text-[#00FF00] drop-shadow-[0_0_10px_#00FF00] font-black italic transform -rotate-2 text-5xl mb-6">
-              Nea Streaming
-            </h1>
+            <div className="mb-6 flex justify-center">
+              <BrandLogo />
+            </div>
             <p className="text-white text-lg mb-6">
               Por favor digita el correo electrónico de la cuenta
             </p>

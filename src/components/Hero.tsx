@@ -1,3 +1,4 @@
+import BrandLogo from "@/components/BrandLogo";
 import { Fade } from "react-awesome-reveal";
 import Image from "next/image";
 
@@ -76,8 +77,8 @@ export default function Hero() {
     <section className="min-h-screen text-white pt-8 pb-28 md:pb-36 relative">
       <div className="container mx-auto px-4 relative z-10">
         <Fade triggerOnce>
-          <div className="text-center mb-12">
-            <div className="flex justify-end mb-4">
+          <div className="text-center mb-6">
+            <div className="flex justify-end mb-2">
               <button
                 type="button"
                 onClick={async () => {
@@ -89,15 +90,15 @@ export default function Hero() {
                 Cerrar sesión
               </button>
             </div>
-            <h2 className="md:text-7xl text-5xl font-black italic transform -rotate-2 text-[#00FF00] drop-shadow-[0_0_10px_#00FF00] mt-6">
-              Nea Streaming
-            </h2>
-            <p className="text-lg md:text-xl text-white mt-4">
+            <div className="flex justify-center">
+              <BrandLogo size="lg" />
+            </div>
+            <p className="text-lg md:text-xl text-white mt-2">
               Selecciona el servicio que deseas utilizar
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             {services.map((service) => (
               <section
                 key={service.id}

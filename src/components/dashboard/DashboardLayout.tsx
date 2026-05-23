@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import BrandLogo from "@/components/BrandLogo";
 import {
   DASHBOARD_SECTIONS,
   getDashboardSection,
 } from "@/lib/dashboard/sections";
-import { BRAND_NAME } from "@/lib/dashboard/theme";
 
 export default function DashboardLayout({
   children,
@@ -36,9 +36,9 @@ export default function DashboardLayout({
           >
             ← Inicio
           </Link>
-          <h1 className="mt-2 text-xl font-black italic text-[#00FF00] drop-shadow-[0_0_12px_#00FF0033] leading-tight">
-            {BRAND_NAME}
-          </h1>
+          <div className="mt-3">
+            <BrandLogo size="sm" />
+          </div>
           <p className="text-xs text-gray-500 mt-1">Panel de administración</p>
         </div>
 
