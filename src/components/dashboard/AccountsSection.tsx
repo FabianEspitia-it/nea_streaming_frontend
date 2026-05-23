@@ -3,14 +3,13 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { bffFetch, readBffError } from "@/lib/dashboard/bff";
-import { fetchAllAccounts } from "@/lib/dashboard/fetch-all-accounts";
-import { fetchAllUsers } from "@/lib/dashboard/fetch-all-users";
+import { searchAccounts } from "@/lib/dashboard/search-accounts";
+import { searchUsers } from "@/lib/dashboard/search-users";
 import DashboardModal from "@/components/dashboard/DashboardModal";
 import SearchableSelect from "@/components/dashboard/SearchableSelect";
 import type {
   AccountRow,
   AccountsListResponse,
-  DashboardUser,
   LinkUserResponse,
 } from "@/lib/dashboard/types";
 
@@ -18,9 +17,6 @@ const PAGE_SIZE = 50;
 
 export default function AccountsSection() {
   const [accounts, setAccounts] = useState<AccountRow[]>([]);
-  const [users, setUsers] = useState<DashboardUser[]>([]);
-  const [linkPickerAccounts, setLinkPickerAccounts] = useState<AccountRow[]>([]);
-  const [loadingLinkPickers, setLoadingLinkPickers] = useState(false);
   const [total, setTotal] = useState(0);
   const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -33,15 +29,6 @@ export default function AccountsSection() {
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [filters, setFilters] = useState("");
   const [appliedEmail, setAppliedEmail] = useState("");
-
-  const loadUsers = useCallback(async () => {
-    try {
-      const allUsers = await fetchAllUsers();
-      setUsers(allUsers);
-    } catch {
-      // Silencioso en carga inicial de usuarios.
-    }
-  }, []);
 
   const loadAccounts = useCallback(async () => {
     setLoading(true);
@@ -75,37 +62,16 @@ export default function AccountsSection() {
   }, [skip, appliedEmail]);
 
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
-
-  useEffect(() => {
     loadAccounts();
   }, [loadAccounts]);
 
-  const loadLinkPickerData = useCallback(async () => {
-    setLoadingLinkPickers(true);
-    try {
-      const [allUsers, allAccounts] = await Promise.all([
-        fetchAllUsers(),
-        fetchAllAccounts(),
-      ]);
-
-      setUsers(allUsers);
-      setLinkPickerAccounts(allAccounts);
-    } catch {
-      toast.error("No se pudieron cargar usuarios y cuentas", { theme: "dark" });
-    } finally {
-      setLoadingLinkPickers(false);
-    }
-  }, []);
-
-  const searchUsers = useCallback(async (query: string) => {
-    const rows = await fetchAllUsers({ email: query });
+  const searchUsersForPicker = useCallback(async (query: string) => {
+    const rows = await searchUsers(query);
     return rows.map((user) => ({ id: user.id, label: user.email }));
   }, []);
 
-  const searchAccounts = useCallback(async (query: string) => {
-    const rows = await fetchAllAccounts({ email: query });
+  const searchAccountsForPicker = useCallback(async (query: string) => {
+    const rows = await searchAccounts(query);
     return rows.map((account) => ({ id: account.id, label: account.email }));
   }, []);
 
@@ -113,7 +79,6 @@ export default function AccountsSection() {
     setLinkUserId("");
     setLinkAccountIds([]);
     setLinkModalOpen(true);
-    loadLinkPickerData();
   }
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
@@ -200,7 +165,6 @@ export default function AccountsSection() {
       setLinkUserId("");
       setLinkAccountIds([]);
       setLinkModalOpen(false);
-      await loadUsers();
       await loadAccounts();
     } catch {
       toast.error("No se pudo vincular", { theme: "dark" });
@@ -304,13 +268,12 @@ export default function AccountsSection() {
                 Usuario
               </span>
               <SearchableSelect
-                options={users.map((u) => ({ id: u.id, label: u.email }))}
+                options={[]}
                 value={linkUserId}
                 onChange={setLinkUserId}
                 placeholder="Buscar usuario…"
-                loading={loadingLinkPickers}
-                emptyMessage="No hay usuarios con ese correo"
-                onSearch={searchUsers}
+                emptyMessage="Escribe para buscar usuarios"
+                onSearch={searchUsersForPicker}
               />
             </div>
             <div className="min-w-0 space-y-1.5 sm:col-span-2">
@@ -319,16 +282,12 @@ export default function AccountsSection() {
               </span>
               <SearchableSelect
                 multiple
-                options={linkPickerAccounts.map((a) => ({
-                  id: a.id,
-                  label: a.email,
-                }))}
+                options={[]}
                 value={linkAccountIds}
                 onChange={setLinkAccountIds}
                 placeholder="Buscar cuentas…"
-                loading={loadingLinkPickers}
-                emptyMessage="No hay cuentas con ese correo"
-                onSearch={searchAccounts}
+                emptyMessage="Escribe para buscar cuentas"
+                onSearch={searchAccountsForPicker}
               />
             </div>
           </div>
