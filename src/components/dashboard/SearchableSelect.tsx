@@ -8,10 +8,8 @@ export type SearchableOption = {
   label: string;
 };
 
-type SearchableSelectProps = {
+type SearchableSelectBaseProps = {
   options: SearchableOption[];
-  value: string;
-  onChange: (id: string) => void;
   placeholder: string;
   disabled?: boolean;
   loading?: boolean;
@@ -20,6 +18,20 @@ type SearchableSelectProps = {
   onSearch?: (query: string) => Promise<SearchableOption[]>;
   minSearchLength?: number;
 };
+
+type SingleSelectProps = SearchableSelectBaseProps & {
+  multiple?: false;
+  value: string;
+  onChange: (id: string) => void;
+};
+
+type MultiSelectProps = SearchableSelectBaseProps & {
+  multiple: true;
+  value: string[];
+  onChange: (ids: string[]) => void;
+};
+
+type SearchableSelectProps = SingleSelectProps | MultiSelectProps;
 
 export default function SearchableSelect({
   options,
@@ -31,6 +43,7 @@ export default function SearchableSelect({
   emptyMessage = "Sin resultados",
   onSearch,
   minSearchLength = 1,
+  multiple = false,
 }: SearchableSelectProps) {
   const listId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,12 +52,31 @@ export default function SearchableSelect({
   const [remoteOptions, setRemoteOptions] = useState<SearchableOption[]>([]);
   const [searching, setSearching] = useState(false);
 
-  const selected = useMemo(() => {
-    return (
-      options.find((option) => option.id === value) ??
-      remoteOptions.find((option) => option.id === value)
-    );
-  }, [options, remoteOptions, value]);
+  const selectedIds = useMemo((): string[] => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    return value ? [value] : [];
+  }, [value]);
+
+  const selectedOptions = useMemo(() => {
+    const merged = new Map<string, SearchableOption>();
+
+    for (const option of options) {
+      merged.set(option.id, option);
+    }
+
+    for (const option of remoteOptions) {
+      merged.set(option.id, option);
+    }
+
+    return selectedIds
+      .map((id) => merged.get(id))
+      .filter((option): option is SearchableOption => Boolean(option));
+  }, [options, remoteOptions, selectedIds]);
+
+  const selected = multiple ? undefined : selectedOptions[0];
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -139,12 +171,37 @@ export default function SearchableSelect({
   }
 
   function handleSelect(option: SearchableOption) {
-    onChange(option.id);
+    if (multiple) {
+      const next = selectedIds.includes(option.id)
+        ? selectedIds.filter((id) => id !== option.id)
+        : [...selectedIds, option.id];
+      (onChange as (ids: string[]) => void)(next);
+      setQuery("");
+      return;
+    }
+
+    (onChange as (id: string) => void)(option.id);
     setQuery(option.label);
     setOpen(false);
   }
 
-  const inputValue = open ? query : selected?.label ?? query;
+  function handleRemove(id: string) {
+    if (!multiple) {
+      return;
+    }
+
+    (onChange as (ids: string[]) => void)(
+      selectedIds.filter((selectedId) => selectedId !== id)
+    );
+  }
+
+  const inputValue = open
+    ? query
+    : multiple
+      ? selectedOptions.length > 0
+        ? `${selectedOptions.length} seleccionada${selectedOptions.length !== 1 ? "s" : ""}`
+        : ""
+      : selected?.label ?? query;
   const listLoading = loading || searching;
 
   return (
@@ -162,8 +219,8 @@ export default function SearchableSelect({
           setQuery(e.target.value);
           setOpen(true);
 
-          if (!e.target.value.trim()) {
-            onChange("");
+          if (!multiple && !e.target.value.trim()) {
+            (onChange as (id: string) => void)("");
           }
         }}
         onFocus={handleFocus}
@@ -181,26 +238,63 @@ export default function SearchableSelect({
           ) : filtered.length === 0 ? (
             <li className="px-3 py-2.5 text-sm text-gray-500">{emptyMessage}</li>
           ) : (
-            filtered.map((option) => (
-              <li key={option.id}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={option.id === value}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => handleSelect(option)}
-                  className={`w-full px-3 py-2.5 text-left text-sm transition hover:bg-[#00FF00]/15 ${
-                    option.id === value
-                      ? "bg-[#00FF00]/10 text-[#00FF00]"
-                      : "text-white"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              </li>
-            ))
+            filtered.map((option) => {
+              const isSelected = selectedIds.includes(option.id);
+
+              return (
+                <li key={option.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelect(option)}
+                    className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition hover:bg-[#00FF00]/15 ${
+                      isSelected
+                        ? "bg-[#00FF00]/10 text-[#00FF00]"
+                        : "text-white"
+                    }`}
+                  >
+                    {multiple && (
+                      <span
+                        aria-hidden
+                        className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                          isSelected
+                            ? "border-[#00FF00] bg-[#00FF00] text-black"
+                            : "border-white/30"
+                        }`}
+                      >
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    )}
+                    {option.label}
+                  </button>
+                </li>
+              );
+            })
           )}
         </ul>
+      )}
+
+      {multiple && selectedOptions.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {selectedOptions.map((option) => (
+            <span
+              key={option.id}
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-[#00FF00]/40 bg-[#00FF00]/10 px-2.5 py-1 text-xs text-[#00FF00]"
+            >
+              <span className="truncate">{option.label}</span>
+              <button
+                type="button"
+                aria-label={`Quitar ${option.label}`}
+                onClick={() => handleRemove(option.id)}
+                className="shrink-0 text-[#00FF00]/80 hover:text-[#00FF00]"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );

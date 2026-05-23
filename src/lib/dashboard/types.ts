@@ -10,6 +10,9 @@ export type DashboardUser = {
 };
 
 export type UsersListResponse = {
+  total: number;
+  skip: number;
+  limit: number;
   users: DashboardUser[];
 };
 
@@ -58,4 +61,20 @@ export type ServiceItem = {
 
 export type ServicesListResponse = {
   items: ServiceItem[];
+};
+
+export type UserAccountLink = {
+  id: string;
+  user_id: string;
+  account_id: string;
+};
+
+export type LinkUserResponse = {
+  created: UserAccountLink[];
+  skipped: { account_id: string; reason: string }[];
+};
+
+export type UnlinkUserResponse = {
+  removed: UserAccountLink[];
+  skipped: { account_id: string; reason: string }[];
 };

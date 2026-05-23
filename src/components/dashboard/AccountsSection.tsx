@@ -4,13 +4,14 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { bffFetch, readBffError } from "@/lib/dashboard/bff";
 import { fetchAllAccounts } from "@/lib/dashboard/fetch-all-accounts";
+import { fetchAllUsers } from "@/lib/dashboard/fetch-all-users";
 import DashboardModal from "@/components/dashboard/DashboardModal";
 import SearchableSelect from "@/components/dashboard/SearchableSelect";
 import type {
   AccountRow,
   AccountsListResponse,
   DashboardUser,
-  UsersListResponse,
+  LinkUserResponse,
 } from "@/lib/dashboard/types";
 
 const PAGE_SIZE = 50;
@@ -25,7 +26,7 @@ export default function AccountsSection() {
   const [loading, setLoading] = useState(true);
   const [bulkEmails, setBulkEmails] = useState("");
   const [linkUserId, setLinkUserId] = useState("");
-  const [linkAccountId, setLinkAccountId] = useState("");
+  const [linkAccountIds, setLinkAccountIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -35,11 +36,8 @@ export default function AccountsSection() {
 
   const loadUsers = useCallback(async () => {
     try {
-      const res = await bffFetch("/users");
-      if (res.ok) {
-        const data = (await res.json()) as UsersListResponse;
-        setUsers(data.users ?? []);
-      }
+      const allUsers = await fetchAllUsers();
+      setUsers(allUsers);
     } catch {
       // Silencioso en carga inicial de usuarios.
     }
@@ -87,22 +85,23 @@ export default function AccountsSection() {
   const loadLinkPickerData = useCallback(async () => {
     setLoadingLinkPickers(true);
     try {
-      const [usersRes, allAccounts] = await Promise.all([
-        bffFetch("/users"),
+      const [allUsers, allAccounts] = await Promise.all([
+        fetchAllUsers(),
         fetchAllAccounts(),
       ]);
 
-      if (usersRes.ok) {
-        const data = (await usersRes.json()) as UsersListResponse;
-        setUsers(data.users ?? []);
-      }
-
+      setUsers(allUsers);
       setLinkPickerAccounts(allAccounts);
     } catch {
       toast.error("No se pudieron cargar usuarios y cuentas", { theme: "dark" });
     } finally {
       setLoadingLinkPickers(false);
     }
+  }, []);
+
+  const searchUsers = useCallback(async (query: string) => {
+    const rows = await fetchAllUsers({ email: query });
+    return rows.map((user) => ({ id: user.id, label: user.email }));
   }, []);
 
   const searchAccounts = useCallback(async (query: string) => {
@@ -112,7 +111,7 @@ export default function AccountsSection() {
 
   function openLinkModal() {
     setLinkUserId("");
-    setLinkAccountId("");
+    setLinkAccountIds([]);
     setLinkModalOpen(true);
     loadLinkPickerData();
   }
@@ -172,8 +171,8 @@ export default function AccountsSection() {
   async function handleLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!linkUserId || !linkAccountId) {
-      toast.error("Selecciona usuario y cuenta", { theme: "dark" });
+    if (!linkUserId || linkAccountIds.length === 0) {
+      toast.error("Selecciona usuario y al menos una cuenta", { theme: "dark" });
       return;
     }
 
@@ -183,7 +182,7 @@ export default function AccountsSection() {
         method: "POST",
         body: JSON.stringify({
           user_id: linkUserId,
-          account_id: linkAccountId,
+          account_ids: linkAccountIds,
         }),
       });
 
@@ -192,9 +191,14 @@ export default function AccountsSection() {
         return;
       }
 
-      toast.success("Cuenta vinculada al usuario", { theme: "dark" });
+      const data = (await res.json()) as LinkUserResponse;
+
+      toast.success(
+        `Vinculadas: ${data.created?.length ?? 0}, omitidas: ${data.skipped?.length ?? 0}`,
+        { theme: "dark" }
+      );
       setLinkUserId("");
-      setLinkAccountId("");
+      setLinkAccountIds([]);
       setLinkModalOpen(false);
       await loadUsers();
       await loadAccounts();
@@ -246,7 +250,7 @@ export default function AccountsSection() {
           onClick={openLinkModal}
           className="rounded-lg border border-[#00FF00] px-6 py-2.5 font-semibold text-[#00FF00] transition hover:bg-[#00FF00]/10"
         >
-          Vincular usuario ↔ cuenta
+          Vincular usuario ↔ cuentas
         </button>
       </div>
 
@@ -287,7 +291,7 @@ export default function AccountsSection() {
 
       <DashboardModal
         open={linkModalOpen}
-        title="Vincular usuario ↔ cuenta"
+        title="Vincular usuario ↔ cuentas"
         wide
         onClose={() => {
           if (!busy) setLinkModalOpen(false);
@@ -305,21 +309,23 @@ export default function AccountsSection() {
                 onChange={setLinkUserId}
                 placeholder="Buscar usuario…"
                 loading={loadingLinkPickers}
-                emptyMessage="No hay usuarios"
+                emptyMessage="No hay usuarios con ese correo"
+                onSearch={searchUsers}
               />
             </div>
-            <div className="min-w-0 space-y-1.5">
+            <div className="min-w-0 space-y-1.5 sm:col-span-2">
               <span className="text-xs font-medium text-[#00FF00]/80">
-                Cuenta
+                Cuentas
               </span>
               <SearchableSelect
+                multiple
                 options={linkPickerAccounts.map((a) => ({
                   id: a.id,
                   label: a.email,
                 }))}
-                value={linkAccountId}
-                onChange={setLinkAccountId}
-                placeholder="Buscar cuenta…"
+                value={linkAccountIds}
+                onChange={setLinkAccountIds}
+                placeholder="Buscar cuentas…"
                 loading={loadingLinkPickers}
                 emptyMessage="No hay cuentas con ese correo"
                 onSearch={searchAccounts}
@@ -359,6 +365,31 @@ export default function AccountsSection() {
         />
       </form>
 
+      <div className="flex items-center justify-between text-sm text-gray-400">
+        <span>
+          {total} cuenta{total !== 1 ? "s" : ""} · página {currentPage} de{" "}
+          {totalPages}
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={skip === 0 || loading}
+            onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
+            className="rounded border border-white/20 px-3 py-1.5 hover:border-[#00FF00]/50 disabled:opacity-40"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            disabled={skip + PAGE_SIZE >= total || loading}
+            onClick={() => setSkip((s) => s + PAGE_SIZE)}
+            className="rounded border border-white/20 px-3 py-1.5 hover:border-[#00FF00]/50 disabled:opacity-40"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+
       <div className="rounded-xl border border-white/10 overflow-hidden">
         <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-6 py-4">
           <h3 className="text-lg font-semibold text-white">Cuentas</h3>
@@ -395,31 +426,6 @@ export default function AccountsSection() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="flex items-center justify-between text-sm text-gray-400">
-        <span>
-          {total} cuenta{total !== 1 ? "s" : ""} · página {currentPage} de{" "}
-          {totalPages}
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={skip === 0 || loading}
-            onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
-            className="rounded border border-white/20 px-3 py-1.5 hover:border-[#00FF00]/50 disabled:opacity-40"
-          >
-            Anterior
-          </button>
-          <button
-            type="button"
-            disabled={skip + PAGE_SIZE >= total || loading}
-            onClick={() => setSkip((s) => s + PAGE_SIZE)}
-            className="rounded border border-white/20 px-3 py-1.5 hover:border-[#00FF00]/50 disabled:opacity-40"
-          >
-            Siguiente
-          </button>
-        </div>
       </div>
     </div>
   );
