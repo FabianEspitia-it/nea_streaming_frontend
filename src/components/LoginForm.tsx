@@ -1,6 +1,7 @@
 "use client";
 
 import BrandLogo from "@/components/BrandLogo";
+import CommunicationChannels from "@/components/CommunicationChannels";
 import { FormEvent, useState } from "react";
 import { Fade } from "react-awesome-reveal";
 import { RotateSpinner } from "react-spinners-kit";
@@ -79,7 +80,7 @@ export default function LoginForm() {
       />
       <div className="absolute inset-0 bg-black opacity-50" aria-hidden />
       <Fade triggerOnce cascade>
-        <section className="flex items-center justify-center min-h-screen relative z-10 px-4">
+        <section className="min-h-screen flex items-center justify-center relative z-10 px-4 pb-44 md:pb-40">
           <div className="text-center rounded-lg p-10 max-w-md w-full border border-[#00FF00] bg-black">
             <div className="mb-6 flex justify-center">
               <BrandLogo size="login" />
@@ -120,6 +121,9 @@ export default function LoginForm() {
           </div>
         </section>
       </Fade>
+      <div className="absolute bottom-4 md:bottom-6 left-0 right-0 z-10 flex justify-center px-4">
+        <CommunicationChannels className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-4 md:gap-x-6 justify-items-center" />
+      </div>
     </div>
   );
 }
