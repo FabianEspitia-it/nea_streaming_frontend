@@ -15,6 +15,7 @@ export const SERVICE_PAGE_PATHS = [
   "/hbo_session_code",
   "/hbo_restor_password",
   "/universal_activation_code",
+  "/mubi_access_code",
 ] as const;
 
 export function isServicePagePath(pathname: string): boolean {

@@ -4,7 +4,8 @@ export type StreamingService =
   | "prime"
   | "hbo"
   | "crunchyroll"
-  | "universal";
+  | "universal"
+  | "mubi";
 
 /** Ruta relativa al backend unificado (BACKEND_API_URL). */
 export function backendServicePath(

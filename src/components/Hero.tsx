@@ -72,6 +72,11 @@ export default function Hero() {
       href: "/universal_activation_code",
       id: 14,
     },
+    {
+      label: "Código de acceso (MUBI)",
+      href: "/mubi_access_code",
+      id: 14,
+    },
   ];
 
   return (
